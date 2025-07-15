@@ -1,7 +1,3 @@
-// --- AGGIUNGI QUESTA RIGA IN CIMA ---
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-
-// --- TUTTO IL RESTO ---
 import express from 'express';
 import cors from 'cors';
 import fetch from 'node-fetch';
@@ -10,18 +6,18 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const DOC_KEY = process.env.DOC_KEY; // NON scrivere la chiave qui, la metterai su Render!
+const DOC_KEY = process.env.DOC_KEY; // NON scrivere la chiave qui, la prendi da Render!
 
-app.all('*', async (req, res) => {
-  const url = 'https://api.docanalyzer.ai' + req.originalUrl;
+app.all('/chat/:docid', async (req, res) => {
+  const url = `https://api.docanalyzer.ai/api/v1/doc/${req.params.docid}/chat`;
   try {
     const apiRes = await fetch(url, {
       method: req.method,
       headers: {
-        ...req.headers,
-        'x-api-key': DOC_KEY,
+        'Authorization': `Bearer ${DOC_KEY}`,
+        'Content-Type': 'application/json'
       },
-      body: ['POST', 'PUT', 'PATCH'].includes(req.method) ? JSON.stringify(req.body) : undefined,
+      body: JSON.stringify(req.body),
     });
     const data = await apiRes.text();
     res.status(apiRes.status).send(data);
